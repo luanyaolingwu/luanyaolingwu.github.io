@@ -1,0 +1,79 @@
+<html>
+
+  <head>
+
+    <title>A Simple OBS Clock</title>
+
+    <meta charset="utf-8" lang="en" />
+
+    <meta name="application-name" content="Simple OBS Clock" />
+
+    <meta name="description" content="a simple OBS (browser source) clock." />
+
+    <meta name="author" content="IAmSeraph" />
+
+    <meta name="keywords" content="OBS, Open Broadcaster Software, Browser Source, Clock" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://pagecdn.io/lib/easyfonts/fonts.css" rel="stylesheet" />
+
+    <script src="https://momentjs.com/downloads/moment-with-locales.min.js"></script>
+
+  </head>
+
+  <body translate="no">
+
+    <div id="clock"></div>
+
+    <script type="application/javascript">
+
+      const defaultFormat = "LTS ll";
+
+      var urlParams;
+
+      (function () {
+
+          var matcher,
+
+              pattern = /\+/g,
+
+              search = /([^&=]+)=?([^&]*)/g,
+
+              decode = function (str) { return decodeURIComponent(str.replace(pattern, " ")); },
+
+              query = window.location.search.substring(1);
+
+              urlParams = {};
+
+          while (matcher = search.exec(query))
+
+            urlParams[decode(matcher[1])] = decode(matcher[2]);
+
+      })();
+
+      var clockOutput = document.getElementById("clock");
+
+      if (urlParams["style"]) clockOutput.setAttribute("style", urlParams["style"]);
+
+      if (urlParams["bodyStyle"]) document.body.setAttribute("style", urlParams["bodyStyle"]);
+
+      if (urlParams["locale"]) moment.locale(urlParams["locale"]);
+
+      var runClock;
+
+      setInterval(
+
+      runClock = function() {
+
+        clockOutput.innerText = moment().format(urlParams["format"] || defaultFormat);
+
+      }, 1000);
+
+      runClock();
+
+    </script>
+
+  </body>
+
+</html>
