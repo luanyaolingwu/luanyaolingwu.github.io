@@ -6,14 +6,14 @@ set APP_HOME=%~dp0
 title 请输入你的选择，按回车键确认 : )
 cd /d %~dp0
 
-if not exist "java.exe" (
+if not exist "%JAVA_HOME%\bin\java.exe" (
     goto java404
     ) else (
     goto gogogo
     )
 
 :gogogo
-echo. && echo.Java 版本是： && java.exe --version && echo.
+echo. && echo.Java 版本是： && "%JAVA_HOME%\bin\java.exe" --version && echo.
 :input1
 echo. && echo.输入要运行的 SignAPI 版本： && echo.    目前可以选择的有
 echo. && echo.  ( S )  QQ - 8.9.63 && echo.  ( Q )  QQ - 8.9.68 && echo.  ( X )  QQ - 8.9.71 && echo.  ( T ) QQ - 8.9.73 && echo.  ( A ) TIM - 3.5.1 && echo.  ( R )  TIM - 3.5.2 && echo.
@@ -64,7 +64,7 @@ set CLASSPATH=%APP_HOME%\lib\unidbg-fetch-qsign-1.1.9.jar;%APP_HOME%\lib\unidbg-
 
 :loop
 
-java.exe -classpath "%CLASSPATH%"  MainKt --basePath=./txlib/%txLibVER%
+"%JAVA_HOME%\bin\java.exe" -classpath "%CLASSPATH%"  MainKt --basePath=./txlib/%txLibVER%
 
 echo. && title SignAPI - %txLibVER% 崩溃退出过… （ 按 Ctrl + C 停止服务 )
 
@@ -75,4 +75,6 @@ exit
 
 :java404
 title 去世咯~ && echo. && echo. 玩毛，Java 都没有装好……  ( 哭哭 喵 ~
+echo. && echo.如果 确认已经安装好Java并设置了环境变量，请按任意键继续 && echo. 不确定的话请关闭本窗口……
 pause > nul
+goto gogogo
