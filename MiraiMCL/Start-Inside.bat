@@ -17,22 +17,36 @@ title 请输入你的选择，按回车键确认 : )
 echo. && echo.Java 版本是： && %JAVAbin%\java.exe --version && echo.
 :input1
 echo. && echo.输入要运行的 SignAPI 版本： && echo.    目前可以选择的有
-echo. && echo.  ( S )  QQ - 8.9.63 && echo.  ( Q )  QQ - 8.9.68 && echo.  ( X )  QQ - 8.9.71 && echo.  ( T ) QQ - 8.9.73 && echo.  ( A ) TIM - 3.5.1 && echo.  ( R )  TIM - 3.5.2 && echo.
+echo. && echo.  ( P )  QQ - 8.9.58 && echo.  ( S )  QQ - 8.9.63 && echo.  ( Q )  QQ - 8.9.68 && echo.  ( L )  QQ - 8.9.70 && echo.  ( X )  QQ - 8.9.71 && echo.  ( T ) QQ - 8.9.73 && echo.  ( d )  QQ - 8.9.80 && echo.  ( K )  QQ - 8.9.83 && echo.  ( H )  QQ - 8.9.85 && echo.  ( A ) TIM - 3.5.1 && echo.  ( R )  TIM - 3.5.2 && echo. && echo. 警告：版本高于 8.9.73可能会出现严重问题，请务必谨慎使用 && echo. 
 set /p input=输入你的选择：
+if "%input%"=="p" goto 8958
+if "%input%"=="P" goto 8958
 if "%input%"=="s" goto 8963
 if "%input%"=="S" goto 8963
 if "%input%"=="q" goto 8968
 if "%input%"=="Q" goto 8968
+if "%input%"=="l" goto 8970
+if "%input%"=="L" goto 8970
 if "%input%"=="x" goto 8971
 if "%input%"=="X" goto 8971
 if "%input%"=="t" goto 8973
 if "%input%"=="T" goto 8973
+if "%input%"=="d" goto 8980
+if "%input%"=="D" goto 8980
+if "%input%"=="k" goto 8983
+if "%input%"=="K" goto 8983
+if "%input%"=="h" goto 8985
+if "%input%"=="H" goto 8985
 if "%input%"=="a" goto 351
 if "%input%"=="A" goto 351
 if "%input%"=="r" goto 352
 if "%input%"=="R" goto 352
 cls && echo. && echo 输入有误，请重试！ 
 goto input1
+
+:8958
+set txLibVER=8.9.58
+goto init
 
 :8963
 set txLibVER=8.9.63
@@ -42,12 +56,28 @@ goto init
 set txLibVER=8.9.68
 goto init
 
+:8970
+set txLibVER=8.9.70
+goto init
+
 :8971
 set txLibVER=8.9.71
 goto init
 
 :8973
 set txLibVER=8.9.73
+goto init
+
+:8980
+set txLibVER=8.9.80
+goto init
+
+:8983
+set txLibVER=8.9.83
+goto init
+
+:8985
+set txLibVER=8.9.85
 goto init
 
 :351
