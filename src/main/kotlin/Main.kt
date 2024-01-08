@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import moe.fuqiuluo.api.*
+import moe.fuqiuluo.comm.CommonConfigExt
 import moe.fuqiuluo.comm.QSignConfig
 import moe.fuqiuluo.comm.checkIllegal
 import moe.fuqiuluo.comm.invoke
@@ -28,7 +29,19 @@ private val API_LIST = arrayOf(
     Routing::addedSign
 )
 
+private val json1 = Json {
+    encodeDefaults = true
+    prettyPrint = true
+    ignoreUnknownKeys = true
+}
+
 fun main(args: Array<String>) {
+    val file = File("qsign.json")
+    val s = if (file.exists()) file.readText() else "{}"
+    val cfg = json1.decodeFromString(CommonConfigExt.serializer(), s)
+    cfg.apply()
+    file.writeText(json1.encodeToString(CommonConfigExt.serializer(), cfg))
+
     args().also {
         val baseDir = File(it["basePath", "Lack of basePath."]).also {
             BASE_PATH = it
@@ -51,7 +64,7 @@ fun main(args: Array<String>) {
     }
     CONFIG.server.also {
         embeddedServer(Netty, host = it.host, port = it.port, module = Application::init)
-        .start(wait = true)
+            .start(wait = true)
     }
 
 }
