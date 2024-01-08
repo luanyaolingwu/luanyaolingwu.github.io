@@ -27,10 +27,15 @@ data class APIInfo(
 
 fun Routing.index() {
     get("/") {
-        call.respond(APIResult(0, "IAA 云天明 章北海", APIInfo(
-            version = BuildConfig.version,
-            protocol = CONFIG.protocol,
-            pid = runCatching{ ManagementFactory.getRuntimeMXBean().name.split("@")[0].toInt() }.getOrNull() ?: -1
-        )))
+        call.respond(
+            APIResult(
+                0, "IAA", APIInfo(
+                    version = BuildConfig.version,
+                    protocol = CONFIG.protocol,
+                    pid = runCatching { ManagementFactory.getRuntimeMXBean().name.split("@")[0].toInt() }.getOrNull()
+                        ?: -1
+                )
+            )
+        )
     }
 }

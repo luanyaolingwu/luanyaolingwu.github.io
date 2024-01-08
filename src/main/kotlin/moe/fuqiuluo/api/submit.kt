@@ -1,6 +1,5 @@
 package moe.fuqiuluo.api
 
-import com.tencent.mobileqq.channel.ChannelManager
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -14,13 +13,11 @@ fun Routing.submit() {
         val cmd = fetchGet("cmd")!!
         val callbackId = fetchGet("callback_id")!!.toLong()
         val buffer = fetchGet("buffer")!!.hex2ByteArray()
+        val androidId = fetchGet("android_id", def = "")!!
+        val guid = fetchGet("guid", def = "")!!.lowercase()
+        val qimei36 = fetchGet("qimei36", def = "")!!.lowercase()
 
-        val session = findSession(uin)
-
-        session.withRuntime {
-            ChannelManager.onNativeReceive(session.vm, cmd, buffer, callbackId)
-            session.vm.global["HAS_SUBMIT"] = true
-        }
+        UnidbgFetchQSign.submit(uin, cmd, callbackId, buffer, androidId, guid, qimei36)
 
         call.respond(APIResult(0, "submit success", ""))
     }

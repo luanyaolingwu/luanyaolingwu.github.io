@@ -1,6 +1,5 @@
 package moe.fuqiuluo.unidbg.env
 
-import CONFIG
 import com.github.unidbg.Emulator
 import com.github.unidbg.file.FileResult
 import com.github.unidbg.file.linux.AndroidFileIO
@@ -9,7 +8,7 @@ import com.github.unidbg.linux.file.ByteArrayFileIO
 import com.github.unidbg.linux.file.DirectoryFileIO
 import com.github.unidbg.linux.file.SimpleFileIO
 import com.github.unidbg.unix.UnixEmulator
-import io.ktor.server.config.*
+import moe.fuqiuluo.comm.CommonConfig
 import moe.fuqiuluo.ext.hex2ByteArray
 import moe.fuqiuluo.unidbg.QSecVM
 import moe.fuqiuluo.unidbg.env.files.fetchCpuInfo
@@ -17,9 +16,8 @@ import moe.fuqiuluo.unidbg.env.files.fetchMemInfo
 import moe.fuqiuluo.unidbg.env.files.fetchStat
 import moe.fuqiuluo.unidbg.env.files.fetchStatus
 import org.slf4j.LoggerFactory
-import moe.fuqiuluo.comm.CommonConfig
 import java.io.File
-import java.util.UUID
+import java.util.*
 
 class FileResolver(
     sdk: Int,
@@ -134,6 +132,7 @@ class FileResolver(
             path.contains("magisk") ||
             path.contains("supolicy")
         ) {
+            logger.warn("""Return cannot access '$path': Not a No such file or directory""")
             return FileResult.failed(UnixEmulator.ENOENT)
         }
 
@@ -150,7 +149,6 @@ class FileResolver(
 
         if (path == "/proc/self/cmdline"
             || path == "/proc/${emulator.pid}/cmdline"
-            || path == "/proc/stat/cmdline" // an error case
         ) {
             if (vm.envData.packageName == "com.tencent.tim") {
                 return FileResult.success(ByteArrayFileIO(oflags, path, "${vm.envData.packageName}".toByteArray()))
@@ -244,14 +242,14 @@ class FileResolver(
         }
 
         if (path.startsWith("/data/user/")) {
-            if (path != "/data/user/0" && path != "/data/user/999") {
+            if (path != "/data/user/0" /*&& path != "/data/user/999"*/) {
                 return FileResult.failed(UnixEmulator.ENOENT)
             } else {
                 return FileResult.failed(UnixEmulator.EACCES)
             }
         }
 
-        if (path.contains("system_android_l2") || path.contains("android_lq")) {
+        if (path.contains(".system_android_l2") || path.contains(".android_lq")) {
             val newPath = if (path.startsWith("C:")) path.substring(2) else path
             val file = tmpFilePath.resolve(".system_android_l2")
             if (!file.exists()) {
@@ -260,6 +258,19 @@ class FileResolver(
             return FileResult.success(SimpleFileIO(oflags, file, newPath))
         }
 
+        if (path == "/proc/version") {
+            val newPath = if (path.startsWith("C:")) path.substring(2) else path
+            val file = tmpFilePath.resolve("ProcVersion")
+            if (!file.exists()) {
+                file.writeBytes("4C696E75782076657273696F6E20342E31392E3135372D6C696E656167656F732B2028726F6F7440656135636333633963656564292028416E64726F69642028383439303137382C206261736564206F6E2072343530373834642920636C616E672076657273696F6E2031342E302E36202868747470733A2F2F616E64726F69642E676F6F676C65736F757263652E636F6D2F746F6F6C636861696E2F6C6C766D2D70726F6A6563742034633630336566623063636130373465393233386166386234313036633330616464343431386636292C204C4C442031342E302E362920233120534D5020505245454D5054204D6F6E204A616E20312030373A33333A30362055544320323032340A".hex2ByteArray())
+            }
+            return FileResult.success(SimpleFileIO(oflags, file, newPath))
+        }
+
+        if (path == "/proc/cpuinfo/cmdline" || path == "/proc/meminfo/cmdline" || path == "/proc/version/cmdline" || path == "/proc/stat/cmdline") {
+            logger.warn("""Return cannot access '$path': Not a directory""")
+            return FileResult.failed(UnixEmulator.ENOTDIR)
+        }
 
         logger.warn("Couldn't find file: $path")
         return def

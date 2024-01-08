@@ -4,16 +4,16 @@ package moe.fuqiuluo.api
 
 import CONFIG
 import com.tencent.mobileqq.channel.SsoPacket
-import com.tencent.mobileqq.sign.QQSecuritySign
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
-import moe.fuqiuluo.comm.EnvData
-import moe.fuqiuluo.ext.*
-import moe.fuqiuluo.unidbg.session.SessionManager
+import moe.fuqiuluo.ext.fetchGet
+import moe.fuqiuluo.ext.fetchPost
+import moe.fuqiuluo.ext.hex2ByteArray
+import moe.fuqiuluo.ext.toHexString
 
 fun Routing.sign() {
     get("/sign") {
@@ -47,7 +47,7 @@ fun Routing.sign() {
 }
 
 @Serializable
-private data class Sign(
+private data class qSign(
     val token: String,
     val extra: String,
     val sign: String,
@@ -65,47 +65,21 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.requestSign(
     androidId: String,
     guid: String
 ) {
-    val session = initSession(uin.toLong()) ?: run {
-        if (androidId.isEmpty() || guid.isEmpty()) {
-            throw MissingKeyError
-        }
-        SessionManager.register(EnvData(
-            uin.toLong(),
-            androidId,
-            guid.lowercase(),
-            qimei36,
-            qua,
-            CONFIG.protocol.version,
-            CONFIG.protocol.code
-        ))
-        findSession(uin.toLong())
-    }
-    val vm = session.vm
-    if (qimei36.isNotEmpty()) {
-        vm.global["qimei36"] = qimei36
-    }
-
-    var o3did = ""
-    val list = arrayListOf<SsoPacket>()
-
-    val sign = session.withRuntime {
-        QQSecuritySign.getSign(vm, qua, cmd, buffer, seq, uin).value.also {
-            o3did = vm.global["o3did"] as? String ?: ""
-            val requiredPacket = vm.global["PACKET"] as ArrayList<SsoPacket>
-            list.addAll(requiredPacket)
-            requiredPacket.clear()
-        }
-    }
+    val sign = runCatching {
+        UnidbgFetchQSign.sign(cmd, uin.toLong(), seq, buffer, qua, qimei36, androidId, guid)
+    }.onFailure {
+        it.printStackTrace()
+    }.getOrNull()
 
     if (sign == null) {
         call.respond(APIResult(-1, "failed", null))
     } else {
         call.respond(
             APIResult(
-                0, "success", Sign(
+                0, "success", qSign(
                     sign.token.toHexString(),
                     sign.extra.toHexString(),
-                    sign.sign.toHexString(), o3did, list
+                    sign.sign.toHexString(), sign.o3did, sign.requestCallback
                 )
             )
         )
