@@ -26,7 +26,8 @@ private val API_LIST = arrayOf(
     Routing::submit,
     Routing::requestToken,
     Routing::register,
-    Routing::addedSign
+    Routing::addedSign,
+    Routing::additional
 )
 
 private val json1 = Json {
@@ -34,6 +35,9 @@ private val json1 = Json {
     prettyPrint = true
     ignoreUnknownKeys = true
 }
+
+@Volatile
+var isStopRequested = false
 
 fun main(args: Array<String>) {
     val file = File("qsign.json")

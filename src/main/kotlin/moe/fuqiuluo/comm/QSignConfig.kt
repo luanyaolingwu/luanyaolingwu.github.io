@@ -1,11 +1,11 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 package moe.fuqiuluo.comm
 
+import CONFIG
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
-import CONFIG
 
 @Serializable
 data class Server(
@@ -48,8 +48,9 @@ data class UnidbgConfig(
 data class QSignConfig(
     var server: Server,
     var key: String,
+    var qkey: String? = "LunaRyu",
     @JsonNames("autoRegister", "auto_register")
-    var autoRegister:Boolean,
+    var autoRegister: Boolean,
     //@JsonNames("reloadInterval", "reload_interval")
     //var reloadInterval: Int,
     var protocol: Protocol,

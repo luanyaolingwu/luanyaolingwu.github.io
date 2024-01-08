@@ -91,7 +91,7 @@ object UnidbgFetchQSign {
         val sign = session.withLock {
             Dandelion.energy(session.vm, "add_group", salt)
         }
-        return sign;
+        return sign
     }
 
     suspend fun energy(
@@ -109,18 +109,18 @@ object UnidbgFetchQSign {
             findSession(uin)
         }
 
-        if (!(data.startsWith("810_") || data.startsWith("812_"))) {
+        /* if (!(data.startsWith("810_") || data.startsWith("812_"))) {
             error("data参数不合法")
-        }
+        } */
         val mode = modeString
-            ?: when (data) {
+        /*    ?: when (data) {
                 "810_d", "810_a", "810_f", "810_9" -> "v2"
                 "810_2", "810_25", "810_7", "810_24" -> "v1"
                 "812_b", "812_a" -> "v3"
                 "812_5" -> "v4"
                 else -> ""
             }
-        if (mode.isBlank()) error("无法自动决断mode，请主动提供")
+        if (mode.isBlank()) error("无法自动决断mode，请主动提供") */
 
 
         val salt = when (mode) {
@@ -406,8 +406,4 @@ class Sign(
 
 class SessionNotFoundError(val uin: Long): RuntimeException("Uin $uin is not registered.")
 
-object WrongKeyError: RuntimeException("Wrong API key.")
-
 object MissingKeyError: RuntimeException("First use must be submitted with android_id and guid.")
-
-object BlackListError: RuntimeException("Blacklist uin.")

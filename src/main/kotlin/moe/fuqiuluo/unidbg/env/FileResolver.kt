@@ -11,10 +11,7 @@ import com.github.unidbg.unix.UnixEmulator
 import moe.fuqiuluo.comm.CommonConfig
 import moe.fuqiuluo.ext.hex2ByteArray
 import moe.fuqiuluo.unidbg.QSecVM
-import moe.fuqiuluo.unidbg.env.files.fetchCpuInfo
-import moe.fuqiuluo.unidbg.env.files.fetchMemInfo
-import moe.fuqiuluo.unidbg.env.files.fetchStat
-import moe.fuqiuluo.unidbg.env.files.fetchStatus
+import moe.fuqiuluo.unidbg.env.files.*
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
@@ -26,7 +23,7 @@ class FileResolver(
     private val tmpFilePath = vm.coreLibPath
     private val uuid = UUID.randomUUID()
     companion object {
-        val logger = LoggerFactory.getLogger("FileResolver")
+        val logger = LoggerFactory.getLogger("FileResolver")!!
 
         fun getAppInstallFolder(packageName: String): String {
             return CommonConfig.appInstallFolder.replace("\${packageName}", packageName)
@@ -151,7 +148,7 @@ class FileResolver(
             || path == "/proc/${emulator.pid}/cmdline"
         ) {
             if (vm.envData.packageName == "com.tencent.tim") {
-                return FileResult.success(ByteArrayFileIO(oflags, path, "${vm.envData.packageName}".toByteArray()))
+                return FileResult.success(ByteArrayFileIO(oflags, path, vm.envData.packageName.toByteArray()))
             } else {
                 return FileResult.success(ByteArrayFileIO(oflags, path, "${vm.envData.packageName}:MSF".toByteArray()))
             }
@@ -206,6 +203,7 @@ class FileResolver(
         //     ))
         val appInstallFolder = getAppInstallFolder(vm.envData.packageName)
         if (path == "$appInstallFolder/lib/arm64") {
+            logger.warn("Checking OUT: $path")
             val fileList = (tmpFilePath.listFiles { it -> it.name.endsWith(".so") }?.map {
                 DirectoryFileIO.DirectoryEntry(true, it.name)
             } ?: emptyList()).toTypedArray()
@@ -249,13 +247,27 @@ class FileResolver(
             }
         }
 
-        if (path.contains(".system_android_l2") || path.contains(".android_lq")) {
+        if (path.contains(".system_android_l2")
+            || path.contains(".android_lq")
+            || path =="/sdcard/Android/.android_lq"
+            || path =="/storage/emulated/0/Android/.android_lq"
+            || path =="/storage/self/primary/Android/.android_lq") {
             val newPath = if (path.startsWith("C:")) path.substring(2) else path
             val file = tmpFilePath.resolve(".system_android_l2")
-            if (!file.exists()) {
-                file.writeBytes("613E7F36143E459381A20F92C04C71E7DF53D0197863ACD2FFC31D7D87D38BC96E1CB97AC6530FE753479465FF0D682420DEC56A368C8D25FFA22C4E005AD7DB06".hex2ByteArray())
-            }
-            return FileResult.success(SimpleFileIO(oflags, file, newPath))
+            /* if (path =="/data/user/0/com.tencent.mobileqq/files/.android_lq"
+                || path =="/data/data/com.tencent.mobileqq/files/.android_lq") {
+                logger.info(""".android_lq_from_appdata: '$path'""")
+                // if (!file.exists()) {
+                    file.writeBytes("6176EF466C7C448C738038596BCB23C351E1B61130E555A229D14ECD14C63D432BB0A2E42FB10079D9AA9053F752AD71AFA102ADBDE16E34483EFF9F411C7AB80B".hex2ByteArray())
+                // }
+                return FileResult.success(SimpleFileIO(oflags, file, newPath))
+            } else { */
+                logger.info(""".android_lq_from_sdcard: '$path'""")
+                if (!file.exists()) {
+                    file.writeBytes("6176EF466C7C448C738038596BCB23C351E1B61130E555A229D14ECD14C63D432BB0A2E42FB10079D9AA9053F752AD71AFA102ADBDE16E34483EFF9F411C7AB80B".hex2ByteArray())
+                }
+                return FileResult.success(SimpleFileIO(oflags, file, newPath))
+            // }
         }
 
         if (path == "/proc/version") {
@@ -267,6 +279,10 @@ class FileResolver(
             return FileResult.success(SimpleFileIO(oflags, file, newPath))
         }
 
+        if (path == "/data/user/0/com.tencent.mobileqq/files/5463306EE50FE3AA/6FAcBa17D93747A5"
+            || path == "/data/data/com.tencent.mobileqq/files/5463306EE50FE3AA/6FAcBa17D93747A5") {
+            return FileResult.success(ByteArrayFileIO(oflags, path, fetchQSpecFile()))
+        }
         if (path == "/proc/cpuinfo/cmdline" || path == "/proc/meminfo/cmdline" || path == "/proc/version/cmdline" || path == "/proc/stat/cmdline") {
             logger.warn("""Return cannot access '$path': Not a directory""")
             return FileResult.failed(UnixEmulator.ENOTDIR)
