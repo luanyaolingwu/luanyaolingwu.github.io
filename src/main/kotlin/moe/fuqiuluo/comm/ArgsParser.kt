@@ -1,6 +1,6 @@
 package moe.fuqiuluo.comm
 
-import moe.fuqiuluo.ext.*
+import moe.fuqiuluo.ext.StringArray
 
 class ArgsParser(
     args: StringArray
@@ -9,9 +9,11 @@ class ArgsParser(
 
     init {
         args.forEach {
-            it.substring(if (it.startsWith("--")) 2
-            else if (it.startsWith("-")) 1
-            else error("Not support the expr.")).split("=").also {
+            it.substring(
+                if (it.startsWith("--")) 2
+                else if (it.startsWith("-")) 1
+                else error("Not support the expr.")
+            ).split("=").also {
                 map[it[0]] = it.slice(1 until it.size).joinToString("")
             }
         }

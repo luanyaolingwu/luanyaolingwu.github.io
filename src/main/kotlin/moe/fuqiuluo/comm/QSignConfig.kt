@@ -1,11 +1,11 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 package moe.fuqiuluo.comm
 
-import CONFIG
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import CONFIG
 
 @Serializable
 data class Server(
@@ -57,7 +57,6 @@ data class QSignConfig(
     @JsonNames("blackList", "black_list")
     var blackList: List<Long>? = null,
     var count: Int = 1,
-    @SerialName("share_token") var shareToken: Boolean = true
 )
 
 fun QSignConfig.checkIllegal() {
