@@ -16,9 +16,10 @@ import moe.fuqiuluo.unidbg.env.files.fetchCpuInfo
 import moe.fuqiuluo.unidbg.env.files.fetchMemInfo
 import moe.fuqiuluo.unidbg.env.files.fetchStat
 import moe.fuqiuluo.unidbg.env.files.fetchStatus
+import org.slf4j.LoggerFactory
+import moe.fuqiuluo.comm.CommonConfig
 import java.io.File
 import java.util.UUID
-import java.util.logging.Logger
 
 class FileResolver(
     sdk: Int,
@@ -26,7 +27,13 @@ class FileResolver(
 ): AndroidResolver(sdk) {
     private val tmpFilePath = vm.coreLibPath
     private val uuid = UUID.randomUUID()
+    companion object {
+        val logger = LoggerFactory.getLogger("FileResolver")
 
+        fun getAppInstallFolder(packageName: String): String {
+            return CommonConfig.appInstallFolder.replace("\${packageName}", packageName)
+        }
+    }
     init {
         for (s in arrayOf("stdin", "stdout", "stderr")) {
             tmpFilePath.resolve(s).also {
@@ -48,6 +55,18 @@ class FileResolver(
             return FileResult.success(SimpleFileIO(oflags, tmpFilePath.resolve(path).also {
                 if (!it.exists()) it.createNewFile()
             }, path))
+        }
+
+        if (CommonConfig.virtualRootPath != null) {
+            val dataFile = File(CommonConfig.virtualRootPath, path)
+            if (dataFile.exists()) {
+                if (dataFile.isFile) {
+                    return FileResult.success(SimpleFileIO(oflags, dataFile, path))
+                }
+                if (dataFile.isDirectory) {
+                    return FileResult.success(DirectoryFileIO(oflags, path, dataFile))
+                }
+            }
         }
 
         if (path == "/data/data/com.tencent.tim/lib/libwtecdh.so") {
@@ -73,6 +92,7 @@ class FileResolver(
         if (path == "/dev/__properties__") {
             return FileResult.success(DirectoryFileIO(oflags, path,
                 DirectoryFileIO.DirectoryEntry(true, "properties_serial"),
+                DirectoryFileIO.DirectoryEntry(true, "property_info"),
             ))
         }
 
@@ -109,12 +129,15 @@ class FileResolver(
             path == "/system/xbin/su" ||
             path == "/cache/su" ||
             path == "/data/su" ||
-            path == "/dev/su" || path.contains("busybox") || path.contains("magisk")
-            ) {
+            path == "/dev/su" ||
+            path.contains("busybox") ||
+            path.contains("magisk") ||
+            path.contains("supolicy")
+        ) {
             return FileResult.failed(UnixEmulator.ENOENT)
         }
 
-        if (path == "/sdcard/Android/") {
+        if (path == "/sdcard/Android/" || path == "/storage/emulated/0/Android/") {
             return FileResult.success(DirectoryFileIO(oflags, path,
                 DirectoryFileIO.DirectoryEntry(false, "data"),
                 DirectoryFileIO.DirectoryEntry(false, "obb"),
@@ -130,7 +153,7 @@ class FileResolver(
             || path == "/proc/stat/cmdline" // an error case
         ) {
             if (vm.envData.packageName == "com.tencent.tim") {
-                return FileResult.success(ByteArrayFileIO(oflags, path, vm.envData.packageName.toByteArray()))
+                return FileResult.success(ByteArrayFileIO(oflags, path, "${vm.envData.packageName}".toByteArray()))
             } else {
                 return FileResult.success(ByteArrayFileIO(oflags, path, "${vm.envData.packageName}:MSF".toByteArray()))
             }
@@ -158,27 +181,42 @@ class FileResolver(
         }
 
         if (path == "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") {
-            return FileResult.success(ByteArrayFileIO(oflags, path, "1670400".toByteArray()))
+            return FileResult.success(ByteArrayFileIO(oflags, path, "1804800".toByteArray()))
         }
 
         if (path == "/sys/devices/soc0/serial_number") {
-            return FileResult.success(ByteArrayFileIO(oflags, path, "0x0000043be8571339".toByteArray()))
+            return FileResult.success(ByteArrayFileIO(oflags, path, CommonConfig.serialNumber.toByteArray()))
         }
 
         if (path == "/proc") {
             return FileResult.success(DirectoryFileIO(oflags, path,
                 DirectoryFileIO.DirectoryEntry(false, emulator.pid.toString()),
+                DirectoryFileIO.DirectoryEntry(false, "self"),
+                DirectoryFileIO.DirectoryEntry(true, "cpuinfo"),
+                DirectoryFileIO.DirectoryEntry(true, "meminfo"),
+                DirectoryFileIO.DirectoryEntry(true, "stat"),
+                DirectoryFileIO.DirectoryEntry(true, "version"),
             ))
         }
 
-        if (path == "/data/app/~~vbcRLwPxS0GyVfqT-nCYrQ==/${vm.envData.packageName}-xJKJPVp9lorkCgR_w5zhyA==/lib/arm64") {
-            //return FileResult.success(DirectoryFileIO(oflags, path,
-             //   DirectoryFileIO.DirectoryEntry(true, "libfekit.so"),
-             //   DirectoryFileIO.DirectoryEntry(true, "libpoxy.so"),
-            //))
+
+        // Tim签名存在例外!
+        // if (path == "/data/app/~~vbcRLwPxS0GyVfqT-nCYrQ==/${vm.envData.packageName}-xJKJPVp9lorkCgR_w5zhyA==/lib/arm64") {
+        //     return FileResult.success(DirectoryFileIO(oflags, path,
+        //         DirectoryFileIO.DirectoryEntry(true, "libfekit.so"),
+        //        DirectoryFileIO.DirectoryEntry(true, "libpoxy.so"),
+        //     ))
+        val appInstallFolder = getAppInstallFolder(vm.envData.packageName)
+        if (path == "$appInstallFolder/lib/arm64") {
+            val fileList = (tmpFilePath.listFiles { it -> it.name.endsWith(".so") }?.map {
+                DirectoryFileIO.DirectoryEntry(true, it.name)
+            } ?: emptyList()).toTypedArray()
+            return FileResult.success(DirectoryFileIO(oflags, path, *fileList))
         }
 
-        if(path == "/data/app/~~vbcRLwPxS0GyVfqT-nCYrQ==/${vm.envData.packageName}-xJKJPVp9lorkCgR_w5zhyA==/base.apk") {
+
+
+        if(path == "$appInstallFolder/base.apk") {
             val f = tmpFilePath.resolve("QQ.apk")
             if (f.exists()) {
                 return FileResult.success(SimpleFileIO(oflags, tmpFilePath.resolve("QQ.apk").also {
@@ -189,11 +227,11 @@ class FileResolver(
             }
         }
 
-        if (path == "/data/app/~~vbcRLwPxS0GyVfqT-nCYrQ==/${vm.envData.packageName}-xJKJPVp9lorkCgR_w5zhyA==/lib/arm64/libfekit.so") {
+        if (path == "$appInstallFolder/lib/arm64/libfekit.so") {
             return FileResult.success(SimpleFileIO(oflags, tmpFilePath.resolve("libfekit.so"), path))
         }
 
-        if (path == "/data/app/~~vbcRLwPxS0GyVfqT-nCYrQ==/${vm.envData.packageName}-xJKJPVp9lorkCgR_w5zhyA==/lib/arm64/libwtecdh.so") {
+        if (path == "$appInstallFolder/lib/arm64/libwtecdh.so") {
             tmpFilePath.resolve("libwtecdh.so").let {
                 if (it.exists()) {
                     return FileResult.success(SimpleFileIO(oflags, it, path))
@@ -217,12 +255,13 @@ class FileResolver(
             val newPath = if (path.startsWith("C:")) path.substring(2) else path
             val file = tmpFilePath.resolve(".system_android_l2")
             if (!file.exists()) {
-                file.writeBytes("619F9042CA821CF91DFAF172D464FFC7A6CB8E024CC053F7438429FA38E86854471D6B0A9DE4C39BF02DC18C0CC54A715C9210E8A32B284366849CBB7F88C634AA".hex2ByteArray())
+                file.writeBytes("613E7F36143E459381A20F92C04C71E7DF53D0197863ACD2FFC31D7D87D38BC96E1CB97AC6530FE753479465FF0D682420DEC56A368C8D25FFA22C4E005AD7DB06".hex2ByteArray())
             }
             return FileResult.success(SimpleFileIO(oflags, file, newPath))
         }
 
-        Logger.getLogger("FileResolver").warning("Couldn't find file: $path")
+
+        logger.warn("Couldn't find file: $path")
         return def
     }
 }
