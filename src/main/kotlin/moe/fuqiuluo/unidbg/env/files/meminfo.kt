@@ -2,49 +2,44 @@ package moe.fuqiuluo.unidbg.env.files
 
 fun fetchMemInfo(): ByteArray {
     return """
-        MemTotal:       11444400 kB
-        MemFree:          444328 kB
-        MemAvailable:    3060808 kB
-        Buffers:            2292 kB
-        Cached:          2735080 kB
-        SwapCached:            0 kB
-        Active:          1430388 kB
-        Inactive:        6251000 kB
-        Active(anon):      28972 kB
-        Inactive(anon):  5323536 kB
-        Active(file):    1401416 kB
-        Inactive(file):   927464 kB
-        Unevictable:      192884 kB
-        Mlocked:          191652 kB
-        SwapTotal:             0 kB
-        SwapFree:              0 kB
-        Dirty:              2540 kB
+        MemTotal:        7635456 kB
+        MemFree:          121556 kB
+        MemAvailable:    2187628 kB
+        Buffers:            2920 kB
+        Cached:          2066936 kB
+        SwapCached:       514472 kB
+        Active:          3009688 kB
+        Inactive:        2040388 kB
+        Active(anon):    2426100 kB
+        Inactive(anon):   703232 kB
+        Active(file):     583588 kB
+        Inactive(file):  1337156 kB
+        Unevictable:       86324 kB
+        Mlocked:           86320 kB
+        SwapTotal:       6291452 kB
+        SwapFree:        4186912 kB
+        Dirty:               988 kB
         Writeback:             0 kB
-        AnonPages:       5136980 kB
-        Mapped:          1164384 kB
-        Shmem:            221712 kB
-        KReclaimable:     871112 kB
-        Slab:             673940 kB
-        SReclaimable:     180828 kB
-        SUnreclaim:       493112 kB
-        KernelStack:      108816 kB
-        ShadowCallStack:   27232 kB
-        PageTables:       186052 kB
+        AnonPages:       2767072 kB
+        Mapped:           925828 kB
+        Shmem:             65056 kB
+        KReclaimable:     279508 kB
+        Slab:             486780 kB
+        SReclaimable:     115268 kB
+        SUnreclaim:       371512 kB
+        KernelStack:      100528 kB
+        ShadowCallStack:   25156 kB
+        PageTables:       166196 kB
         NFS_Unstable:          0 kB
         Bounce:                0 kB
         WritebackTmp:          0 kB
-        CommitLimit:     5722200 kB
-        Committed_AS:   192359556 kB
+        CommitLimit:    10109180 kB
+        Committed_AS:   198710388 kB
         VmallocTotal:   262930368 kB
-        VmallocUsed:      303412 kB
+        VmallocUsed:      218320 kB
         VmallocChunk:          0 kB
-        Percpu:            13888 kB
-        AnonHugePages:         0 kB
-        ShmemHugePages:        0 kB
-        ShmemPmdMapped:        0 kB
-        FileHugePages:      4096 kB
-        FilePmdMapped:      4096 kB
-        CmaTotal:         499712 kB
+        Percpu:            11680 kB
+        CmaTotal:         196608 kB
         CmaFree:               0 kB
     """.trimIndent().toByteArray()
 }

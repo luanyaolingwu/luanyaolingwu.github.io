@@ -32,6 +32,7 @@ open class AndroidVM(packageName: String, dynarmic: Boolean, unicorn: Boolean, k
             LogFactory.getFactory()
                 .attributeNames.forEach { println(it) }
         }
+
         vm.setVerbose(CONFIG.unidbg.debug)
         val syscall = emulator.syscallHandler
         syscall.isVerbose = CONFIG.unidbg.debug
