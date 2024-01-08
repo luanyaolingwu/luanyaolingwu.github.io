@@ -1,0 +1,4 @@
+[submodule "MrXiaoMQSignPlugin"]
+	path = MrXiaoMQSignPlugin
+	url = https://github.com/MrXiaoM/qsign
+	branch = mirai
