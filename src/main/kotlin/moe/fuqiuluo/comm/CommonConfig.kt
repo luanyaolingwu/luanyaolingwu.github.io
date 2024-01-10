@@ -1,5 +1,6 @@
 package moe.fuqiuluo.comm
 
+import moe.fuqiuluo.unidbg.env.files.generateLucky
 import java.io.File
 
 object CommonConfig {
@@ -23,4 +24,8 @@ object CommonConfig {
     var targetSdkVersion = 29
     @JvmStatic
     var storageSize = "137438953471"
+    @JvmStatic
+    var lqLucky= generateLucky(32)
+    @JvmStatic
+    var qSpecLucky= generateLucky(37)
 }

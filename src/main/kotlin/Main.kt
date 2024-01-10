@@ -1,3 +1,4 @@
+
 import com.tencent.mobileqq.dt.model.FEBound
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -14,7 +15,6 @@ import moe.fuqiuluo.comm.CommonConfigExt
 import moe.fuqiuluo.comm.QSignConfig
 import moe.fuqiuluo.comm.checkIllegal
 import moe.fuqiuluo.comm.invoke
-import moe.fuqiuluo.unidbg.env.files.generateLucky
 import java.io.File
 
 lateinit var CONFIG: QSignConfig
@@ -39,9 +39,6 @@ private val json1 = Json {
 
 @Volatile
 var isStopRequested = false
-
-val theLucky = generateLucky(32)
-val randLucky = generateLucky(37)
 
 fun main(args: Array<String>) {
     val file = File("qsign.json")
