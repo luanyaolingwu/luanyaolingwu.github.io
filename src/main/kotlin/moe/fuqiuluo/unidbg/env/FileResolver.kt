@@ -13,6 +13,7 @@ import moe.fuqiuluo.ext.hex2ByteArray
 import moe.fuqiuluo.unidbg.QSecVM
 import moe.fuqiuluo.unidbg.env.files.*
 import org.slf4j.LoggerFactory
+import theLucky
 import java.io.File
 import java.util.*
 
@@ -264,7 +265,7 @@ class FileResolver(
             } else { */
                 logger.info(""".android_lq_from_sdcard: '$path'""")
                 if (!file.exists()) {
-                    file.writeBytes("6176EF466C7C448C738038596BCB23C351E1B61130E555A229D14ECD14C63D432BB0A2E42FB10079D9AA9053F752AD71AFA102ADBDE16E34483EFF9F411C7AB80B".hex2ByteArray())
+                    file.writeBytes("6176EF466C7C448C738038596BCB23C351E1B61130E555A229D14ECD14C63D432B$theLucky".hex2ByteArray()) //取值: B0A2E42FB10079D9AA9053F752AD71AFA102ADBDE16E34483EFF9F411C7AB80B
                 }
                 return FileResult.success(SimpleFileIO(oflags, file, newPath))
             // }
