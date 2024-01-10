@@ -9,7 +9,7 @@ object ChannelManager {
         //    .callJniMethod(vm.emulator, "setChannelProxy(Lcom/tencent/mobileqq/channel/ChannelProxy;)V", proxy)
     }
 
-    fun initReport(vm: QSecVM, qua: String, version: String, androidOs: String = "12", brand: String = "Redmi", model: String = "23013RK75C",
+    fun initReport(vm: QSecVM, qua: String, version: String, androidOs: String = "13", brand: String = "motorola", model: String = "XT2125-4",
                    qimei36: String = vm.global["qimei36"] as? String ?: "", guid: String = vm.global["guid"] as? String ?: "") {
         runCatching {
             vm.newInstance("com/tencent/mobileqq/channel/ChannelManager", unique = true)

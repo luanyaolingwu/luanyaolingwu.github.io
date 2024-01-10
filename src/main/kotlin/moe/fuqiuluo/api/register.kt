@@ -23,10 +23,9 @@ fun Routing.register() {
         if (key == CONFIG.key) {
             if (UnidbgFetchQSign.register(uin, androidId, guid, qimei36, qua, version, code)) {
                 call.respond(
-                    APIResult(
+                    failure(
                         0,
-                        "The QQ has already loaded an instance, so this time it is deleting the existing instance and creating a new one.",
-                        ""
+                        "The QQ has already loaded an instance, so this time it is deleting the existing instance and creating a new one."
                     )
                 )
             } else {
@@ -43,7 +42,7 @@ fun Routing.register() {
 
         if (key == CONFIG.key) {
             if (UnidbgFetchQSign.destroy(uin)) {
-                call.respond(APIResult(0, "Instance destroyed successfully.", ""))
+                call.respond(failure(0, "Instance destroyed successfully."))
             } else {
                 failure(1, "Instance does not exist.")
             }

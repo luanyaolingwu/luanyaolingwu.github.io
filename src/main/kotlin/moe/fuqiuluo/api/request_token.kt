@@ -5,28 +5,33 @@ package moe.fuqiuluo.api
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import moe.fuqiuluo.ext.failure
 import moe.fuqiuluo.ext.fetchGet
 
 fun Routing.requestToken() {
     get("/request_token") {
         val uin = fetchGet("uin")!!.toLong()
-        val isForced = fetchGet("force", def = "false")
+        val androidId = fetchGet("android_id", def = "")!!.toString()
+        val guid = fetchGet("guid", def = "")!!.toString()
+        val qimei36 = fetchGet("qimei36", def = "")!!.toString()
+        val isForced = fetchGet("force", def = "false")!!.toString()
 
         val pair = runCatching {
-            UnidbgFetchQSign.requestToken(uin, isForced == "true")
+            UnidbgFetchQSign.requestToken(uin, isForced == "true",androidId ,guid ,qimei36)
         }.onFailure {
-            call.respond(APIResult(-1, it.message.toString(), ""))
+            call.respond(failure(-1, it.message.toString()))
         }.getOrNull() ?: return@get
 
         val isSuccessful = pair.first
         val list = pair.second
 
         call.respond(
-            APIResult(
-                if (!isSuccessful) -1 else 0,
-                if (!isSuccessful) "request_token timeout" else "submit success",
-                list
-            )
+            if (!isSuccessful) {
+                failure(-1, "request_token timeout")
+            } else {
+                APIResult(0, "submit success", list)
+            }
+
         )
     }
 }

@@ -10,10 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
-import moe.fuqiuluo.ext.fetchGet
-import moe.fuqiuluo.ext.fetchPost
-import moe.fuqiuluo.ext.hex2ByteArray
-import moe.fuqiuluo.ext.toHexString
+import moe.fuqiuluo.ext.*
 
 fun Routing.sign() {
     get("/sign") {
@@ -65,14 +62,16 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.requestSign(
     androidId: String,
     guid: String
 ) {
+    var stackTraceMSG = ""
     val sign = runCatching {
         UnidbgFetchQSign.sign(cmd, uin.toLong(), seq, buffer, qua, qimei36, androidId, guid)
     }.onFailure {
+        stackTraceMSG = it.toString()
         it.printStackTrace()
     }.getOrNull()
 
     if (sign == null) {
-        call.respond(APIResult(-1, "failed", null))
+        call.respond(failure(-1, stackTraceMSG))
     } else {
         call.respond(
             APIResult(

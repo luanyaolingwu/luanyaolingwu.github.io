@@ -59,13 +59,13 @@ class QSecJni(
         if (signature == "com/tencent/mobileqq/fe/IFEKitLog->i(Ljava/lang/String;ILjava/lang/String;)V") {
             val tag = vaList.getObjectArg<StringObject>(0)
             val msg = vaList.getObjectArg<StringObject>(2)
-            logger.trace(tag.value + "info: " + msg.value)
+            logger.info(tag.value + "info: " + msg.value)
             return
         }
         if (signature == "com/tencent/mobileqq/fe/IFEKitLog->e(Ljava/lang/String;ILjava/lang/String;)V") {
             val tag = vaList.getObjectArg<StringObject>(0)
             val msg = vaList.getObjectArg<StringObject>(2)
-            logger.trace(tag.value + "error: " + msg.value)
+            logger.info(tag.value + "error: " + msg.value)
             return
         }
         if (signature == "com/tencent/mobileqq/channel/ChannelProxy->sendMessage(Ljava/lang/String;[BJ)V") {
@@ -76,7 +76,7 @@ class QSecJni(
 
             if (callbackId == -1L) return
 
-            logger.trace("uin = ${global["uin"]}, id = $callbackId, sendPacket(cmd = $cmd, data = $hex)")
+            logger.info("uin = ${global["uin"]}, id = $callbackId, sendPacket(cmd = $cmd, data = $hex)")
             (global["PACKET"] as ArrayList<SsoPacket>).add(SsoPacket(cmd, hex, callbackId))
             (global["mutex"] as Mutex).also { if (it.isLocked) it.unlock() }
             return
@@ -191,7 +191,7 @@ class QSecJni(
             val data = vaList.getObjectArg<DvmObject<*>>(1).value as ByteArray
             val result = FEBound.transform(mode, data)
             if (mode == 1)
-                logger.trace("FEBound.transform(${data.toHexString()}) => ${result?.toHexString()}")
+                logger.info("FEBound.transform(${data.toHexString()}) => ${result?.toHexString()}")
             return BytesObject(vm, result)
         }
         if (signature == "java/lang/ClassLoader->getSystemClassLoader()Ljava/lang/ClassLoader;") {
@@ -510,13 +510,13 @@ class QSecJni(
             return false
         }
         if (CONFIG.unidbg.debug) {
-            println("Accept ${ if (isStatic) "static" else "" } $signature")
+            logger.info("Accept ${ if (isStatic) "static" else "" } $signature")
         }
         return super.acceptMethod(dvmClass, signature, isStatic)
     }
 
     override fun toReflectedMethod(vm: BaseVM?, dvmClass: DvmClass?, signature: String?): DvmObject<*> {
-        //println("toReflectedMethod")
+        logger.info("toReflectedMethod")
         return super.toReflectedMethod(vm, dvmClass, signature)
     }
 
