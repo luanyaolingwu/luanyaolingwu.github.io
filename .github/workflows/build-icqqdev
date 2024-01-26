@@ -1,0 +1,23 @@
+name: Build icqq-dev
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      # Setup node
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://registry.npmjs.org'
+      # Install dependencies and build
+      - run: |
+        mkdir icqq-build
+        git clone https://github.com/icqqjs/icqq -b dev
+        cd icqq
+        npm install
+        npm run build
+        ls .
