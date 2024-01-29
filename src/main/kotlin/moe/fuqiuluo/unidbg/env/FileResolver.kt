@@ -130,7 +130,7 @@ class FileResolver(
             path.contains("magisk") ||
             path.contains("supolicy")
         ) {
-            logger.warn("""Return cannot access '$path': Not a No such file or directory""")
+            logger.warn("""Return cannot access '$path': No such file or directory""")
             return FileResult.failed(UnixEmulator.ENOENT)
         }
 
@@ -282,6 +282,7 @@ class FileResolver(
 
         if (path == "/data/user/0/com.tencent.mobileqq/files/5463306EE50FE3AA/6FAcBa17D93747A5"
             || path == "/data/data/com.tencent.mobileqq/files/5463306EE50FE3AA/6FAcBa17D93747A5") {
+            logger.info("""qSpecFile '$path'""")
             return FileResult.success(ByteArrayFileIO(oflags, path, fetchQSpecFile()))
         }
         if (path == "/proc/cpuinfo/cmdline" || path == "/proc/meminfo/cmdline" || path == "/proc/version/cmdline" || path == "/proc/stat/cmdline") {
